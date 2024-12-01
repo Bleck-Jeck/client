@@ -1,0 +1,14 @@
+query GetContentByType($contentType: ContentType!, $rating: Int, $limit: Int, $page: Int) {
+  getContentByType(contentType: $contentType, rating: $rating, limit: $limit, page: $page) {
+    content_id
+    title
+    release_date
+    age_rating
+    rating
+    poster_url
+    img
+    genres {
+      name
+    }
+  }
+}

@@ -1,0 +1,8 @@
+query ScheduledContent($limit: Int, $sortByDate: String) {
+  getScheduledContent(weekly: true, limit: $limit, sortByDate: $sortByDate) {
+    content_id
+    title
+    next_episode
+  }
+}
+

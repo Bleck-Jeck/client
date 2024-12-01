@@ -1,0 +1,17 @@
+query SearchContent($query: String!) {
+  searchContent(query: $query) {
+    content_id
+    title
+    original_title
+    release_date
+    content_type
+    age_rating
+    mpaa_rating
+    rating
+    img
+    poster_url
+    genres {
+      name
+    }
+  }
+}

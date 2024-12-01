@@ -1,0 +1,36 @@
+query GetContentById($getContentByIdId: Int!) {
+  getContentById(id: $getContentByIdId) {
+    content_id
+    title
+    original_title
+    release_date
+    release_status
+    content_type
+    season_number
+    age_rating
+    mpaa_rating
+    rating
+    summary
+    poster_url
+    img
+    trailer_url
+    country
+    player_url
+    series_id
+    updated_at
+    genres {
+      id
+      name
+    }
+    studios {
+      id
+      name
+    }
+    episodes {
+      episode_id
+      episode_number
+      season_id
+      player_url
+    }
+  }
+}
