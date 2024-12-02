@@ -1,43 +1,13 @@
 import { Suspense } from "react";
 import { Metadata, ResolvingMetadata } from "next";
-import RelatedProducts from "./RelatedProducts";
-import { getUrqlClient } from "@/src/libs/urql";
-import {
-  GetContentByIdDocument,
-  GetContentByIdQuery,
-  GetContentByIdQueryVariables,
-} from "@/src/graphql/operations";
+import ContentDetails from "./ContentDetails";
+import { getContentById } from "@/src/util/contentService";
 import { delay } from "@/src/libs/utils";
-
-interface Movie {
-  title: string;
-  description: string;
-  poster?: string;
-  year?: number;
-  enTitle?: string;
-  status?: string;
-  duration?: number;
-}
-
-// Получение фильма по ID
-export async function getAllMovies() {
-  try {
-    const { client } = getUrqlClient();
-    const result = await client.query<GetContentByIdQuery, GetContentByIdQueryVariables>(
-      GetContentByIdDocument,
-      { getContentByIdId: 2 }
-    );
-    return result.data?.getContentById;
-  } catch (error) {
-    console.error("Ошибка при получении фильмов:", error);
-    return null;
-  }
-}
 
 // Генерация статических маршрутов
 export async function generateStaticParams() {
-  const movies = await getAllMovies();
-  return movies?.id ? [movies.id.toString()] : [];
+  const content = await getContentById(2); // Пример ID контента
+  return content?.content_id ? [{ handle: content.content_id.toString() }] : [];
 }
 
 // Генерация метаданных
@@ -45,36 +15,31 @@ export async function generateMetadata(
   { params }: { params: { handle: string } },
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const handle = params.handle;
-
   try {
-    const searchResults: any = await getPropertyValue(handle);
-    if (!searchResults) throw new Error("Фильм не найден");
+    const content = await getContentById(Number(params.handle));
+    if (!content) throw new Error("Контент не найден");
 
     const previousImages = (await parent).openGraph?.images || [];
     return {
-      title: searchResults.title,
-      description: searchResults.description,
+      title: content.title || "Контент",
+      description: content.summary || "Описание отсутствует.",
       openGraph: {
-        images: ["/opengraphql-image.png", ...previousImages],
+        images: [content.poster_url || "/default-poster.png", ...previousImages],
       },
     };
   } catch (error) {
-    console.error("Ошибка при получении метаданных:", error);
+    console.error("Ошибка при генерации метаданных:", error);
     return {
       title: "Ошибка",
-      description: "Произошла ошибка при получении метаданных",
-      openGraph: {
-        images: [],
-      },
+      description: "Произошла ошибка при генерации метаданных",
+      openGraph: { images: [] },
     };
   }
 }
 
-// Основной компонент страницы фильма
-export default function MoviePage({ params }: { params: { handle: string } }) {
-  // Имитация ожидания загрузки
-  delay(1000);
+// Основной компонент страницы контента
+export default function ContentPage({ params }: { params: { handle: string } }) {
+  delay(1000); // Имитация загрузки
 
   return (
     <div className="fit pt-5 mx-auto">
@@ -85,7 +50,7 @@ export default function MoviePage({ params }: { params: { handle: string } }) {
           </div>
         }
       >
-        <RelatedProducts handle={params.handle} />
+        <ContentDetails handle={params.handle} />
       </Suspense>
     </div>
   );
