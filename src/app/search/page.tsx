@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import MovieGridItems from "@/src/components/movie-grid-items";
+import ContentGridItems from "@/src/components/ContentGridItems"; // Переименовал компонент
 import { defaultSort, sorting } from "@/src/libs/contact";
 import {
   SearchContentDocument,
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "Поиск любимых сериалов и фильмов онлайн бесплатно.",
 };
 
-interface Movie {
+interface Content {
   content_id: string;
   title: string;
   original_title?: string;
@@ -26,11 +26,11 @@ interface Movie {
   genres: { name: string }[];
 }
 
-async function fetchMovies(
+async function fetchContent(
   query: string,
   page: number = 1,
   limit: number = 20
-): Promise<Movie[]> {
+): Promise<Content[]> {
   try {
     const { client } = getUrqlClient();
     const result = await client
@@ -45,11 +45,10 @@ async function fetchMovies(
       throw new Error(result.error.message);
     }
 
-    const movies = result.data?.searchContent || [];
-    console.log("Fetched Movies:", movies); // Лог для отладки
-    return movies;
+    const content = result.data?.searchContent || [];
+    return content;
   } catch (error: any) {
-    console.error("Error fetching movies:", error.message);
+    console.error("Error fetching content:", error.message);
     return []; // Возвращаем пустой массив, чтобы избежать ошибок рендеринга
   }
 }
@@ -64,11 +63,10 @@ export default async function SearchPage({
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;
 
-  // Получаем фильмы
-  const movies = searchValue ? await fetchMovies(searchValue, 1, 20) : [];
+  // Получаем контент
+  const content = searchValue ? await fetchContent(searchValue, 1, 20) : [];
 
-  const resultsText = movies.length !== 1 ? "results" : "result";
-  console.log("Movies to display:", movies); // Лог данных для проверки
+  const resultsText = content.length !== 1 ? "совпадений" : "совпадения";
 
   return (
     <main>
@@ -77,14 +75,14 @@ export default async function SearchPage({
           <div className="col-span-8">
             {searchValue ? (
               <p className="mb-4">
-                {movies.length === 0
-                  ? "There are no movies that match "
-                  : `Showing ${movies.length} ${resultsText} for `}
+                {content.length === 0
+                  ? "There are no items that match "
+                  : `Найдено ${content.length} ${resultsText} по названию `}
                 <span className="font-bold">&quot;{searchValue}&quot;</span>
               </p>
             ) : null}
 
-            <MovieGridItems content={movies} />
+            <ContentGridItems content={content} />
           </div>
         </div>
       </div>
